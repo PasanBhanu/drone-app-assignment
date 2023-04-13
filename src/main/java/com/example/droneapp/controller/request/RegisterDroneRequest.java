@@ -1,0 +1,21 @@
+package com.example.droneapp.controller.request;
+
+import jakarta.validation.constraints.*;
+import lombok.Data;
+
+@Data
+public class RegisterDroneRequest {
+    @NotNull(message = "serial number is required")
+    @Size(max = 100)
+    private String serialNumber;
+    @NotBlank(message = "model is required")
+    private String model;
+    @NotBlank(message = "weight is required")
+    @Max(value = 500, message = "maximum weight limit is 500g")
+    @Min(value = 0, message = "weight should be more than zero")
+    private Double weightLimit;
+    @NotBlank
+    @Max(value = 100, message = "battery percentage should be between 0 - 100")
+    @Min(value = 0, message = "battery percentage should be between 0 - 100")
+    private Double battery;
+}
