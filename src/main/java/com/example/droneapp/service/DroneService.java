@@ -1,9 +1,11 @@
 package com.example.droneapp.service;
 
+import com.example.droneapp.controller.model.MedicationData;
 import com.example.droneapp.controller.model.ValidationError;
 import com.example.droneapp.controller.request.LoadDroneRequest;
 import com.example.droneapp.controller.request.RegisterDroneRequest;
 import com.example.droneapp.controller.response.CommonResponse;
+import com.example.droneapp.controller.response.DroneLoadDataResponse;
 import com.example.droneapp.exception.DatabaseValidationException;
 import com.example.droneapp.exception.LogicViolationException;
 import com.example.droneapp.repository.DroneRepository;
@@ -15,7 +17,9 @@ import com.example.droneapp.util.ErrorCodes;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class DroneService {
@@ -48,7 +52,7 @@ public class DroneService {
     }
 
     public CommonResponse loadDrone(String serialNumber, LoadDroneRequest request) {
-        Optional<Drone> drone = droneRepository.findById(serialNumber);
+        Optional<Drone> drone = droneRepository.findBySerialNumberIgnoreCase(serialNumber);
         if (drone.isEmpty()) {
             throw new DatabaseValidationException(ErrorCodes.RECORD_NOT_FOUND, Collections.singletonList(new ValidationError("serial number", "drone not found for this serial number")));
         }
@@ -76,5 +80,21 @@ public class DroneService {
         CommonResponse commonResponse = new CommonResponse();
         commonResponse.setSuccessResponse("medication added");
         return commonResponse;
+    }
+
+    public DroneLoadDataResponse getLoadingDataForDrone(String serialNumber) {
+        Optional<Drone> drone = droneRepository.findBySerialNumberIgnoreCase(serialNumber);
+        if (drone.isEmpty()) {
+            throw new DatabaseValidationException(ErrorCodes.RECORD_NOT_FOUND, Collections.singletonList(new ValidationError("serial number", "drone not found for this serial number")));
+        }
+
+        List<Medication> medicationList = medicationRepository.findByDroneSerialNumberIgnoreCase(serialNumber);
+
+        DroneLoadDataResponse response = new DroneLoadDataResponse();
+        response.setSuccessResponse("data loaded");
+        response.setSerialNumber(serialNumber);
+        response.setDroneState(drone.get().getState());
+        response.setMedicationData(medicationList.stream().map(MedicationData::new).collect(Collectors.toList()));
+        return response;
     }
 }

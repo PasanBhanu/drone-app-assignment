@@ -3,6 +3,7 @@ package com.example.droneapp.controller;
 import com.example.droneapp.controller.request.LoadDroneRequest;
 import com.example.droneapp.controller.request.RegisterDroneRequest;
 import com.example.droneapp.controller.response.CommonResponse;
+import com.example.droneapp.controller.response.DroneLoadDataResponse;
 import com.example.droneapp.service.DroneService;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
@@ -30,8 +31,8 @@ public class DispatchController {
     }
 
     @GetMapping(value = "/load/{serialNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getLoadingDataForDrone(@PathVariable("serialNumber") String serialNumber) {
-        return null;
+    public ResponseEntity<DroneLoadDataResponse> getLoadingDataForDrone(@PathVariable("serialNumber") String serialNumber) {
+        return ResponseEntity.ok(droneService.getLoadingDataForDrone(serialNumber));
     }
 
     @GetMapping(value = "/get-available-drones", produces = MediaType.APPLICATION_JSON_VALUE)
