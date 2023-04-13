@@ -2,6 +2,8 @@ package com.example.droneapp.controller;
 
 import com.example.droneapp.controller.request.LoadDroneRequest;
 import com.example.droneapp.controller.request.RegisterDroneRequest;
+import com.example.droneapp.controller.response.AvailableDroneResponse;
+import com.example.droneapp.controller.response.BatteryStatusResponse;
 import com.example.droneapp.controller.response.CommonResponse;
 import com.example.droneapp.controller.response.DroneLoadDataResponse;
 import com.example.droneapp.service.DroneService;
@@ -36,12 +38,12 @@ public class DispatchController {
     }
 
     @GetMapping(value = "/get-available-drones", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getAvailableDrone(@RequestBody RegisterDroneRequest request) {
-        return null;
+    public ResponseEntity<AvailableDroneResponse> getAvailableDrones() {
+        return ResponseEntity.ok(droneService.getAvailableDrones());
     }
 
     @GetMapping(value = "/check-battery/{serialNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse checkDroneBattery(@PathVariable("serialNumber") String serialNumber) {
-        return null;
+    public ResponseEntity<BatteryStatusResponse> checkDroneBattery(@PathVariable("serialNumber") String serialNumber) {
+        return ResponseEntity.ok(droneService.checkDroneBattery(serialNumber));
     }
 }

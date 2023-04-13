@@ -1,9 +1,12 @@
 package com.example.droneapp.service;
 
+import com.example.droneapp.controller.model.DroneData;
 import com.example.droneapp.controller.model.MedicationData;
 import com.example.droneapp.controller.model.ValidationError;
 import com.example.droneapp.controller.request.LoadDroneRequest;
 import com.example.droneapp.controller.request.RegisterDroneRequest;
+import com.example.droneapp.controller.response.AvailableDroneResponse;
+import com.example.droneapp.controller.response.BatteryStatusResponse;
 import com.example.droneapp.controller.response.CommonResponse;
 import com.example.droneapp.controller.response.DroneLoadDataResponse;
 import com.example.droneapp.exception.DatabaseValidationException;
@@ -95,6 +98,28 @@ public class DroneService {
         response.setSerialNumber(serialNumber);
         response.setDroneState(drone.get().getState());
         response.setMedicationData(medicationList.stream().map(MedicationData::new).collect(Collectors.toList()));
+        return response;
+    }
+
+    public AvailableDroneResponse getAvailableDrones() {
+        List<Drone> droneList = droneRepository.findByState(DroneState.IDLE.name());
+
+        AvailableDroneResponse response = new AvailableDroneResponse();
+        response.setSuccessResponse("data loaded");
+        response.setDrones(droneList.stream().map(DroneData::new).collect(Collectors.toList()));
+        return response;
+    }
+
+    public BatteryStatusResponse checkDroneBattery(String serialNumber) {
+        Optional<Drone> drone = droneRepository.findBySerialNumberIgnoreCase(serialNumber);
+        if (drone.isEmpty()) {
+            throw new DatabaseValidationException(ErrorCodes.RECORD_NOT_FOUND, Collections.singletonList(new ValidationError("serial number", "drone not found for this serial number")));
+        }
+
+        BatteryStatusResponse response = new BatteryStatusResponse();
+        response.setSuccessResponse("data loaded");
+        response.setSerialNumber(serialNumber);
+        response.setBattery(drone.get().getBattery());
         return response;
     }
 }
