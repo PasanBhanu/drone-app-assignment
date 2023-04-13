@@ -1,5 +1,6 @@
 package com.example.droneapp.controller;
 
+import com.example.droneapp.controller.request.LoadDroneRequest;
 import com.example.droneapp.controller.request.RegisterDroneRequest;
 import com.example.droneapp.controller.response.CommonResponse;
 import com.example.droneapp.service.DroneService;
@@ -23,9 +24,9 @@ public class DispatchController {
         return ResponseEntity.ok(droneService.registerDrone(request));
     }
 
-    @PostMapping(value = "/load", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse loadDrone(@RequestBody RegisterDroneRequest request) {
-        return null;
+    @PostMapping(value = "/load/{serialNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CommonResponse> loadDrone(@PathVariable("serialNumber") String serialNumber, @RequestBody LoadDroneRequest request) {
+        return ResponseEntity.ok(droneService.loadDrone(serialNumber, request));
     }
 
     @GetMapping(value = "/load/{serialNumber}", produces = MediaType.APPLICATION_JSON_VALUE)

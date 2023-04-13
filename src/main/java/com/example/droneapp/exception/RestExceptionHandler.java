@@ -44,7 +44,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(LogicViolationException.class)
     protected <T extends ErrorResponse> ResponseEntity<T> handleLogicViolationException(LogicViolationException ex) {
-        ErrorResponse response = new ErrorResponse(ex.getStatus(), ex.getMessage());
+        ValidationErrorResponse response = new ValidationErrorResponse(ex.getStatus(), ex.getMessage(), ex.getErrors());
         return new ResponseEntity<T>((T) response, ex.getHttpStatus());
     }
 
