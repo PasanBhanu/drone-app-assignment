@@ -3,15 +3,15 @@ package com.example.droneapp.controller.response;
 import com.example.droneapp.controller.model.ValidationError;
 import lombok.Data;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class ValidationErrorResponse extends ErrorResponse {
-    public ValidationErrorResponse(Integer status, String message, ArrayList<ValidationError> validationErrors) {
+    public ValidationErrorResponse(Integer status, String message, List<ValidationError> errors) {
         this.setStatus(status);
         this.setMessage(message);
-        this.validationErrors = validationErrors;
+        this.errors = errors;
     }
 
-    private ArrayList<ValidationError> validationErrors;
+    private List<ValidationError> errors;
 }

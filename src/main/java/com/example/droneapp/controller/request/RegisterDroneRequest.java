@@ -10,11 +10,11 @@ public class RegisterDroneRequest {
     private String serialNumber;
     @NotBlank(message = "model is required")
     private String model;
-    @NotBlank(message = "weight is required")
+    @NotNull(message = "weight is required")
     @Max(value = 500, message = "maximum weight limit is 500g")
     @Min(value = 0, message = "weight should be more than zero")
     private Double weightLimit;
-    @NotBlank
+    @NotNull(message = "battery percentage is required")
     @Max(value = 100, message = "battery percentage should be between 0 - 100")
     @Min(value = 0, message = "battery percentage should be between 0 - 100")
     private Double battery;
