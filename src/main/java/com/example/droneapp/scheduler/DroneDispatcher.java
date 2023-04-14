@@ -10,10 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -118,15 +115,11 @@ public class DroneDispatcher {
             d.setState(DroneState.RETURNING.name());
         });
         droneRepository.saveAll(droneList);
-
-        // Mark all dispatched medications as complete
-        List<Medication> medicationList = medicationRepository.findByStatus(MedicationStatus.DISPATCHED.getValue());
-        medicationList.stream().forEach(m -> m.setStatus(MedicationStatus.COMPLETED.getValue()));
-        medicationRepository.saveAll(medicationList);
     }
 
     private void returnToWarehouse() {
         log.info("Executing drone idle");
+        List<String> returningDrones = new ArrayList<>();
         List<Drone> droneList = droneRepository.findByState(DroneState.RETURNING.name());
         droneList.stream().forEach(d -> {
             // Get Randoms (1-20%) for Battery Reduction
@@ -134,7 +127,13 @@ public class DroneDispatcher {
             d.setBattery(d.getBattery() - batteryForRide);
             log.info("Action for Drone {} - {} | Battery after {}", d.getSerialNumber(), DroneState.IDLE, d.getBattery());
             d.setState(DroneState.IDLE.name());
+            returningDrones.add(d.getSerialNumber());
         });
         droneRepository.saveAll(droneList);
+
+        // Mark all Dispatched Medications as COMPLETED for the IDLE drones
+        List<Medication> medicationList = medicationRepository.findByDroneSerialNumberInIgnoreCaseAndStatus(returningDrones, MedicationStatus.DISPATCHED.getValue());
+        medicationList.stream().forEach(m -> m.setStatus(MedicationStatus.COMPLETED.getValue()));
+        medicationRepository.saveAll(medicationList);
     }
 }
