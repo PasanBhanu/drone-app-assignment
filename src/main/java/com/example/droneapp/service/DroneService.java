@@ -17,6 +17,7 @@ import com.example.droneapp.repository.model.Drone;
 import com.example.droneapp.repository.model.Medication;
 import com.example.droneapp.util.DroneState;
 import com.example.droneapp.util.ErrorCodes;
+import com.example.droneapp.util.MedicationStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -83,6 +84,7 @@ public class DroneService {
         medication.setWeight(request.getWeight());
         medication.setCode(request.getCode());
         medication.setImage(request.getImage());
+        medication.setStatus(MedicationStatus.ACTIVE.getValue());
         medicationRepository.save(medication);
 
         CommonResponse commonResponse = new CommonResponse();
@@ -96,7 +98,12 @@ public class DroneService {
             throw new DatabaseValidationException(ErrorCodes.RECORD_NOT_FOUND, Collections.singletonList(new ValidationError("serial number", "drone not found for this serial number")));
         }
 
-        List<Medication> medicationList = medicationRepository.findByDroneSerialNumberIgnoreCase(serialNumber);
+        List<Medication> medicationList;
+        if (drone.get().getState().equals(DroneState.IDLE.name())) {
+            medicationList = medicationRepository.findByDroneSerialNumberIgnoreCaseAndStatus(serialNumber, MedicationStatus.ACTIVE.getValue());
+        } else {
+            medicationList = medicationRepository.findByDroneSerialNumberIgnoreCaseAndStatus(serialNumber, MedicationStatus.DISPATCHED.getValue());
+        }
 
         DroneLoadDataResponse response = new DroneLoadDataResponse();
         response.setSuccessResponse("data loaded");

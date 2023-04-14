@@ -32,4 +32,7 @@ public class Medication {
     @Column(name = "IMAGE")
     private String image;
 
+    @Basic
+    @Column(name = "STATUS")
+    private Integer status;
 }

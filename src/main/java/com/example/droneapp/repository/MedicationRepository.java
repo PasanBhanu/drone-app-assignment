@@ -8,8 +8,10 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface MedicationRepository extends JpaRepository<Medication, Integer> {
-    List<Medication> findByDroneSerialNumberIgnoreCase(String droneSerialNumber);
+    List<Medication> findByDroneSerialNumberIgnoreCaseAndStatus(String droneSerialNumber, Integer status);
 
-    @Query("SELECT SUM(m.weight) FROM Medication m WHERE LOWER(m.droneSerialNumber) = LOWER(:serialNumber)")
+    List<Medication> findByStatus(Integer status);
+
+    @Query("SELECT SUM(m.weight) FROM Medication m WHERE LOWER(m.droneSerialNumber) = LOWER(:serialNumber) AND m.status = 1")
     Double totalWeightOfDrone(@Param("serialNumber") String serialNumber);
 }
