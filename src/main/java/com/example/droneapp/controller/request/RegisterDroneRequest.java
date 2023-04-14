@@ -9,6 +9,7 @@ public class RegisterDroneRequest {
     @Size(max = 100)
     private String serialNumber;
     @NotBlank(message = "model is required")
+    @Pattern(regexp = "^(Lightweight|Middleweight|Cruiserweight|Heavyweight)$", message = "invalid model")
     private String model;
     @NotNull(message = "weight is required")
     @Max(value = 500, message = "maximum weight limit is 500g")
