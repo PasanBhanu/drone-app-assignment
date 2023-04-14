@@ -60,6 +60,18 @@ public class DroneDispatcher {
 
     private void startLoading() {
         log.info("Executing drone load");
+        List<Drone> droneList = droneRepository.findByState(DroneState.IDLE.name());
+        droneList.stream().forEach(d -> {
+            if (d.getBattery() >= 25) {
+                log.info("Action for Drone {} - {}", d.getSerialNumber(), DroneState.LOADING);
+                d.setState(DroneState.LOADING.name());
+            }
+        });
+        droneRepository.saveAll(droneList);
+    }
+
+    private void completeLoading() {
+        log.info("Executing drone load complete");
         List<Medication> medicationList = medicationRepository.findByStatus(MedicationStatus.ACTIVE.getValue());
         Set<Drone> droneList = new HashSet<>();
         medicationList.stream().forEach(m -> {
@@ -71,16 +83,6 @@ public class DroneDispatcher {
         });
         medicationRepository.saveAll(medicationList);
 
-        droneList.stream().forEach(d -> {
-            log.info("Action for Drone {} - {}", d.getSerialNumber(), DroneState.LOADING);
-            d.setState(DroneState.LOADING.name());
-        });
-        droneRepository.saveAll(droneList);
-    }
-
-    private void completeLoading() {
-        log.info("Executing drone load complete");
-        List<Drone> droneList = droneRepository.findByState(DroneState.LOADING.name());
         droneList.stream().forEach(d -> {
             log.info("Action for Drone {} - {}", d.getSerialNumber(), DroneState.LOADED);
             d.setState(DroneState.LOADED.name());
@@ -116,6 +118,13 @@ public class DroneDispatcher {
             d.setState(DroneState.RETURNING.name());
         });
         droneRepository.saveAll(droneList);
+
+        // Mark all dispatched medications as complete
+        List<Medication> medicationList = medicationRepository.findByStatus(MedicationStatus.DISPATCHED.getValue());
+        medicationList.stream().forEach(m -> {
+            m.setStatus(MedicationStatus.COMPLETED.getValue());
+        });
+        medicationRepository.saveAll(medicationList);
     }
 
     private void returnToWarehouse() {

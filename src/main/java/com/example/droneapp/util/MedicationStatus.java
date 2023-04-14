@@ -2,7 +2,8 @@ package com.example.droneapp.util;
 
 public enum MedicationStatus {
     ACTIVE(1),
-    DISPATCHED(0);
+    DISPATCHED(2),
+    COMPLETED(3);
 
     private final Integer value;
 

@@ -18,13 +18,16 @@ import com.example.droneapp.repository.model.Medication;
 import com.example.droneapp.util.DroneState;
 import com.example.droneapp.util.ErrorCodes;
 import com.example.droneapp.util.MedicationStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class DroneService {
 
@@ -36,6 +39,11 @@ public class DroneService {
         this.medicationRepository = medicationRepository;
     }
 
+    /**
+     * Register Drone
+     * @param request Drone Data
+     * @return Status
+     */
     public CommonResponse registerDrone(RegisterDroneRequest request) {
 
         if (droneRepository.existsBySerialNumberIgnoreCase(request.getSerialNumber())) {
@@ -50,23 +58,27 @@ public class DroneService {
         drone.setState(DroneState.IDLE.name());
         droneRepository.save(drone);
 
+        log.info("Drone added with Serial Number {} - {}", request.getSerialNumber(), DroneState.IDLE);
+
         CommonResponse commonResponse = new CommonResponse();
         commonResponse.setSuccessResponse("drone added");
         return commonResponse;
     }
 
+    /**
+     * Load Drone
+     * @param serialNumber Drone Serial Number
+     * @param request Load Data
+     * @return Status
+     */
     public CommonResponse loadDrone(String serialNumber, LoadDroneRequest request) {
         Optional<Drone> drone = droneRepository.findBySerialNumberIgnoreCase(serialNumber);
         if (drone.isEmpty()) {
             throw new DatabaseValidationException(ErrorCodes.RECORD_NOT_FOUND, Collections.singletonList(new ValidationError("serial number", "drone not found for this serial number")));
         }
 
-        if (!drone.get().getState().equals(DroneState.IDLE.name())) {
-            throw new LogicViolationException(ErrorCodes.INVALID_STATE, Collections.singletonList(new ValidationError("all", "drone is not in IDLE state")));
-        }
-
-        if (drone.get().getBattery() < 25) {
-            throw new LogicViolationException(ErrorCodes.INVALID_STATE, Collections.singletonList(new ValidationError("all", "drone battery is below 25%")));
+        if (!drone.get().getState().equals(DroneState.LOADING.name())) {
+            throw new LogicViolationException(ErrorCodes.INVALID_STATE, Collections.singletonList(new ValidationError("all", "drone is not in LOADING state")));
         }
 
         if (drone.get().getWeightLimit() < request.getWeight()) {
@@ -87,21 +99,42 @@ public class DroneService {
         medication.setStatus(MedicationStatus.ACTIVE.getValue());
         medicationRepository.save(medication);
 
+        log.info("Drone {} loaded. Weight: {} Battery: {}% Status: {}", serialNumber, currentWeight + request.getWeight(), drone.get().getBattery(), drone.get().getState());
+
         CommonResponse commonResponse = new CommonResponse();
         commonResponse.setSuccessResponse("medication added");
         return commonResponse;
     }
 
+    /**
+     * Get Loading Data for Drone
+     * @param serialNumber Drone Serial Number
+     * @return Loading Data
+     */
     public DroneLoadDataResponse getLoadingDataForDrone(String serialNumber) {
         Optional<Drone> drone = droneRepository.findBySerialNumberIgnoreCase(serialNumber);
         if (drone.isEmpty()) {
             throw new DatabaseValidationException(ErrorCodes.RECORD_NOT_FOUND, Collections.singletonList(new ValidationError("serial number", "drone not found for this serial number")));
         }
 
-        List<Medication> medicationList;
-        if (drone.get().getState().equals(DroneState.IDLE.name())) {
+        log.info("Get load for Drone {} with status {}", serialNumber, drone.get().getState());
+
+        /**
+         * Get Loading for Drone
+         *
+         * LOADING -> ACTIVE
+         * IDLE -> NONE
+         * OTHERS -> DISPATCHED
+         */
+        List<Medication> medicationList = new ArrayList<>();
+        if (drone.get().getState().equals(DroneState.LOADING.name())) {
             medicationList = medicationRepository.findByDroneSerialNumberIgnoreCaseAndStatus(serialNumber, MedicationStatus.ACTIVE.getValue());
-        } else {
+        } else if (drone.get().getState().equals(DroneState.LOADED.name())
+                || drone.get().getState().equals(DroneState.LOADING.name())
+                || drone.get().getState().equals(DroneState.DELIVERING.name())
+                || drone.get().getState().equals(DroneState.DELIVERED.name())
+                || drone.get().getState().equals(DroneState.DELIVERED.name())
+                || drone.get().getState().equals(DroneState.RETURNING.name())) {
             medicationList = medicationRepository.findByDroneSerialNumberIgnoreCaseAndStatus(serialNumber, MedicationStatus.DISPATCHED.getValue());
         }
 
@@ -113,8 +146,12 @@ public class DroneService {
         return response;
     }
 
+    /**
+     * Get Available Drones for Loading
+     * @return Available Drone List
+     */
     public AvailableDroneResponse getAvailableDrones() {
-        List<Drone> droneList = droneRepository.findByState(DroneState.IDLE.name());
+        List<Drone> droneList = droneRepository.findByState(DroneState.LOADING.name());
 
         AvailableDroneResponse response = new AvailableDroneResponse();
         response.setSuccessResponse("data loaded");
@@ -122,6 +159,11 @@ public class DroneService {
         return response;
     }
 
+    /**
+     * Check Drone Battery
+     * @param serialNumber Drone Serial Number
+     * @return Battery Percentage
+     */
     public BatteryStatusResponse checkDroneBattery(String serialNumber) {
         Optional<Drone> drone = droneRepository.findBySerialNumberIgnoreCase(serialNumber);
         if (drone.isEmpty()) {
