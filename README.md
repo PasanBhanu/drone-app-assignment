@@ -34,3 +34,6 @@ Use Postman or any other HTTP client to test the API endpoints. See the API docu
 You can import the following Postman collection to quickly test the API endpoints:
 
 [Drone APIs.postman_collection](https://github.com/PasanBhanu/drone-app-assignment/blob/master/postman/Drone%20APIs.postman_collection.json)
+
+## Drone State Transition
+There is a separate scheduler running in the application which transition drone status. This scheduler is running on every second and the action which is going to execute is randomly selected. 
