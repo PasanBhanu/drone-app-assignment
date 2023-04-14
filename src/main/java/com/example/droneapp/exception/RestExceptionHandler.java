@@ -47,10 +47,4 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ValidationErrorResponse response = new ValidationErrorResponse(ex.getStatus(), ex.getMessage(), ex.getErrors());
         return new ResponseEntity<T>((T) response, ex.getHttpStatus());
     }
-
-    @ExceptionHandler(ServiceException.class)
-    protected <T extends ErrorResponse> ResponseEntity<T> handleServiceException(ServiceException ex) {
-        ErrorResponse response = new ErrorResponse(ex.getStatus(), ex.getMessage());
-        return new ResponseEntity<T>((T) response, ex.getHttpStatus());
-    }
 }

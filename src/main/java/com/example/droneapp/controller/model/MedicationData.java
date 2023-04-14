@@ -1,9 +1,7 @@
 package com.example.droneapp.controller.model;
 
 import com.example.droneapp.repository.model.Medication;
-import lombok.Data;
 
-@Data
 public class MedicationData {
     private Integer medicationId;
     private String name;

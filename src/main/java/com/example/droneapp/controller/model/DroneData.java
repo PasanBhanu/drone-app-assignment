@@ -1,9 +1,7 @@
 package com.example.droneapp.controller.model;
 
 import com.example.droneapp.repository.model.Drone;
-import lombok.Data;
 
-@Data
 public class DroneData {
     private String serialNumber;
     private String model;

@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class RegisterDroneRequest {
     @NotNull(message = "serial number is required")
+    @NotBlank(message = "serial number is required")
     @Size(max = 100)
     private String serialNumber;
     @NotBlank(message = "model is required")
