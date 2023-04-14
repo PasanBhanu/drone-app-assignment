@@ -33,4 +33,4 @@ Use Postman or any other HTTP client to test the API endpoints. See the API docu
 ## Postman Collection
 You can import the following Postman collection to quickly test the API endpoints:
 
-[Drone APIs.postman_collection](/postman/Drone APIs.postman_collection)
+[Drone APIs.postman_collection](https://github.com/PasanBhanu/drone-app-assignment/blob/master/postman/Drone%20APIs.postman_collection.json)
