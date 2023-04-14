@@ -72,6 +72,11 @@ public class DroneService {
             throw new LogicViolationException(ErrorCodes.INVALID_STATE, Collections.singletonList(new ValidationError("all", "drone is unable to carry medication weight")));
         }
 
+        Double currentWeight = Optional.ofNullable(medicationRepository.totalWeightOfDrone(serialNumber)).orElse(0.0);
+        if (drone.get().getWeightLimit() < (currentWeight + request.getWeight())) {
+            throw new LogicViolationException(ErrorCodes.INVALID_STATE, Collections.singletonList(new ValidationError("all", "drone weight is exceeding")));
+        }
+
         Medication medication = new Medication();
         medication.setDroneSerialNumber(serialNumber);
         medication.setName(request.getName());
