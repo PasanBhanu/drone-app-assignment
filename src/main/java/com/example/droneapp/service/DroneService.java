@@ -133,7 +133,6 @@ public class DroneService {
                 || drone.get().getState().equals(DroneState.LOADING.name())
                 || drone.get().getState().equals(DroneState.DELIVERING.name())
                 || drone.get().getState().equals(DroneState.DELIVERED.name())
-                || drone.get().getState().equals(DroneState.DELIVERED.name())
                 || drone.get().getState().equals(DroneState.RETURNING.name())) {
             medicationList = medicationRepository.findByDroneSerialNumberIgnoreCaseAndStatus(serialNumber, MedicationStatus.DISPATCHED.getValue());
         }

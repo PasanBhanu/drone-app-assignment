@@ -22,9 +22,12 @@ public class DroneDispatcher {
     private final MedicationRepository medicationRepository;
     private final DroneRepository droneRepository;
 
+    private Random random;
+
     public DroneDispatcher(MedicationRepository medicationRepository, DroneRepository droneRepository) {
         this.medicationRepository = medicationRepository;
         this.droneRepository = droneRepository;
+        random = new Random();
     }
 
     @Scheduled(fixedRate = 1000)
@@ -32,8 +35,7 @@ public class DroneDispatcher {
         log.info("Drone Dispatcher Running");
 
         // Randomly Perform Action
-        Random random = new Random();
-        int execution = random.nextInt(6);
+        int execution = this.random.nextInt(6);
         log.info("Random no generated {}", execution);
 
         switch (execution){
@@ -55,6 +57,8 @@ public class DroneDispatcher {
             case 5:
                 this.returnToWarehouse();
                 break;
+            default:
+                break;
         }
     }
 
@@ -74,13 +78,9 @@ public class DroneDispatcher {
         log.info("Executing drone load complete");
         List<Medication> medicationList = medicationRepository.findByStatus(MedicationStatus.ACTIVE.getValue());
         Set<Drone> droneList = new HashSet<>();
-        medicationList.stream().forEach(m -> {
-            droneList.add(droneRepository.findBySerialNumberIgnoreCase(m.getDroneSerialNumber()).get());
-        });
+        medicationList.stream().forEach(m -> droneList.add(droneRepository.findBySerialNumberIgnoreCase(m.getDroneSerialNumber()).get()));
 
-        medicationList.stream().forEach(m -> {
-            m.setStatus(MedicationStatus.DISPATCHED.getValue());
-        });
+        medicationList.stream().forEach(m -> m.setStatus(MedicationStatus.DISPATCHED.getValue()));
         medicationRepository.saveAll(medicationList);
 
         droneList.stream().forEach(d -> {
@@ -121,9 +121,7 @@ public class DroneDispatcher {
 
         // Mark all dispatched medications as complete
         List<Medication> medicationList = medicationRepository.findByStatus(MedicationStatus.DISPATCHED.getValue());
-        medicationList.stream().forEach(m -> {
-            m.setStatus(MedicationStatus.COMPLETED.getValue());
-        });
+        medicationList.stream().forEach(m -> m.setStatus(MedicationStatus.COMPLETED.getValue()));
         medicationRepository.saveAll(medicationList);
     }
 
@@ -132,8 +130,7 @@ public class DroneDispatcher {
         List<Drone> droneList = droneRepository.findByState(DroneState.RETURNING.name());
         droneList.stream().forEach(d -> {
             // Get Randoms (1-20%) for Battery Reduction
-            Random random = new Random();
-            int batteryForRide = random.nextInt(20) + 1;
+            int batteryForRide = this.random.nextInt(20) + 1;
             d.setBattery(d.getBattery() - batteryForRide);
             log.info("Action for Drone {} - {} | Battery after {}", d.getSerialNumber(), DroneState.IDLE, d.getBattery());
             d.setState(DroneState.IDLE.name());
